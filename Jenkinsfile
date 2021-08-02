@@ -37,7 +37,7 @@ pipeline{
     post{
         success{
             junit '**/TEST-*.xml'
-            archive '**/*.war'
+            archiveArtifacts '**/*.war'
             echo 'The build has been successful'
             mail subject: 'Build is successful', to: 'devs@jenkinsbuild.com', from: 'admins@jenkinsbuild.com', body: 'BUILD_ID '+env.BUILD_URL 
 
