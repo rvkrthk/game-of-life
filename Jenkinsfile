@@ -1,0 +1,56 @@
+pipeline {
+  agent {
+    node {
+      label 'GOL'
+    }
+    parameters{
+        string (name: 'BRANCH', defaultValue: 'master', description: 'choose which branch has to be executed')
+        choice(name: 'GOALS', choices: ['package', 'clean package', 'install'], description: 'choose the appropriate MAVEN goal')
+    }
+    stages{
+        stage ('CLONE'){
+            steps{
+                mail subject: 'Build Started!', to: 'devs@jenkinsbuild.com', from: 'admins@jenkinsbuild.com', body: 'BUILD_ID '+env.BUILD_URL
+                branch "${params.BRANCH}"
+                git 'https://github.com/rvkrthk/game-of-life.git'
+            }
+        }
+        stage ('BUILD'){
+            steps{
+                sh "mvn ${params.GOALS}"
+            }
+        }
+        stage ('STASH'){
+            steps{
+                stash name: 'gol-war-file', includes: '**/gameoflife.war'
+            }
+        }
+        stage ('UNSTASH'){
+            agent {label 'TOMCAT'}
+            steps{
+                unstash name: 'gol-war-file'
+                sh 'sudo cp /home/jenkins/jenkins_root/workspace/GOL-Pipeline/build-pipeline/gameoflife-web/target/gameoflife.war /opt/tomcat/webapps/'
+                sh 'sudo runuser -u tomcat -- /opt/tomcat/bin/catalina.sh run /opt/tomcat/webapps/gameoflife.war || true'
+            }
+        }
+
+      }
+      steps {
+        build 'mvn package'
+      }
+    }
+    post{
+        success{
+            junit '**/TEST-*.xml'
+            archiveArtifacts '**/*.war'
+            echo 'The build has been successful'
+            mail subject: 'Build is successful', to: 'devs@jenkinsbuild.com', from: 'admins@jenkinsbuild.com', body: 'BUILD_ID '+env.BUILD_URL 
+
+    stage('Artifactory') {
+      steps {
+        archiveArtifacts '**/gameoflife.war'
+      }
+    }
+
+  }
+}
