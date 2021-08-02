@@ -21,13 +21,13 @@ pipeline{
         }
         stage ('STASH'){
             steps{
-                STASH name: "gol-war-file", includes: "/home/jenkins/jenkins_root/workspace/GOL-Pipeline/build-pipeline/gameoflife-web/target/gameoflife.war"
+                stash name: 'gol-war-file', includes: '/home/jenkins/jenkins_root/workspace/GOL-Pipeline/build-pipeline/gameoflife-web/target/gameoflife.war'
             }
         }
         stage ('UNSTASH'){
             agent {label 'TOMCAT'}
             steps{
-                UNSTASH name: "gol-war-file"
+                unstash name: 'gol-war-file'
             }
         }
     }
