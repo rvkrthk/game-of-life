@@ -25,6 +25,7 @@ pipeline{
             }
         }
         stage ('UNSTASH'){
+            agent {label 'TOMCAT'}
             steps{
                 UNSTASH name: "gol-war-file"
             }
