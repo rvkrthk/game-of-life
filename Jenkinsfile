@@ -1,14 +1,13 @@
-pipeline {
-  agent {
-    node {
-      label 'GOL'
+pipeline{
+    agent{
+        label 'GOL'
     }
     parameters{
         string (name: 'BRANCH', defaultValue: 'master', description: 'choose which branch has to be executed')
         choice(name: 'GOALS', choices: ['package', 'clean package', 'install'], description: 'choose the appropriate MAVEN goal')
     }
     stages{
-        stage ('CLONE'){
+        stage ('SCM'){
             steps{
                 mail subject: 'Build Started!', to: 'devs@jenkinsbuild.com', from: 'admins@jenkinsbuild.com', body: 'BUILD_ID '+env.BUILD_URL
                 branch "${params.BRANCH}"
@@ -34,23 +33,18 @@ pipeline {
             }
         }
 
-      }
-      steps {
-        build 'mvn package'
-      }
     }
     post{
         success{
             junit '**/TEST-*.xml'
-            archiveArtifacts '**/*.war'
+            archive '**/*.war'
             echo 'The build has been successful'
             mail subject: 'Build is successful', to: 'devs@jenkinsbuild.com', from: 'admins@jenkinsbuild.com', body: 'BUILD_ID '+env.BUILD_URL 
 
-    stage('Artifactory') {
-      steps {
-        archiveArtifacts '**/gameoflife.war'
-      }
+        }
+        failure{
+            echo 'The build failed, please check'
+            mail subject: 'Build failed!', to: 'devs@jenkinsbuild.com', from: 'admins@jenkinsbuild.com', body: 'BUILD_ID '+env.BUILD_URL
+        }
     }
-
-  }
 }
