@@ -29,6 +29,7 @@ pipeline{
             steps{
                 unstash name: 'gol-war-file'
                 sh 'sudo cp /home/jenkins/jenkins_root/workspace/GOL-Pipeline/build-pipeline/gameoflife-web/target/gameoflife.war /opt/tomcat/webapps/'
+                sh 'sudo -i'
                 sh '/opt/tomcat/bin/catalina.sh /opt/tomcat/webapps/gameoflife.war'
             }
         }
