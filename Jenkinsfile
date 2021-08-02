@@ -19,14 +19,6 @@ pipeline{
                 sh "mvn ${params.GOALS}"
             }
         }
-        stage ('QUALITY'){
-            steps{
-                withSonarQubeEnv ('SONAR_SCAN'){
-                    sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar'
-                }
-            }
-        }
-
     }
     post{
         success{
