@@ -19,20 +19,39 @@ pipeline{
                 sh "mvn ${params.GOALS}"
             }
         }
-        stage ('STASH'){
-            steps{
-                stash name: 'gol-war-file', includes: '**/gameoflife.war'
+        stage ('Server'){
+            steps {
+               rtServer (
+                    id: "JFROG",
+                    url: 'http://34.134.44.185:8081/artifactory',
+                    username: 'admin',
+                    password: 'Maxima100%',
+                    /*bypassProxy: true,*/
+                    timeout: 300
+                )
             }
         }
-        stage ('UNSTASH'){
-            agent {label 'TOMCAT'}
+        stage('Upload'){
             steps{
-                unstash name: 'gol-war-file'
-                sh 'sudo cp /home/jenkins/jenkins_root/workspace/GOL-Pipeline/build-pipeline/gameoflife-web/target/gameoflife.war /opt/tomcat/webapps/'
-                sh 'sudo runuser -u tomcat -- /opt/tomcat/bin/catalina.sh run /opt/tomcat/webapps/gameoflife.war || true'
+                rtUpload (
+                serverId:"JFROG" ,
+                    spec: '''{
+                        "files": [
+                            {
+                            "pattern": "*.war",
+                            "target": "gameoflife"
+                            }
+                        ]
+                    }''',
+                )
             }
         }
-
+        stage ('Publish build info') {
+            steps {
+                rtPublishBuildInfo (
+                    serverId: "JFROG"
+            )
+        }
     }
     post{
         success{
