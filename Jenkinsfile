@@ -50,7 +50,8 @@ pipeline{
             steps {
                 rtPublishBuildInfo (
                     serverId: "JFROG"
-            )
+                )
+            }
         }
     }
     post{
